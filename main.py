@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlmodel import Session, select
 from database import create_db_and_tables, get_session
-from routers import estadisticasgenerales
+from routers import Equipo
 from models import (
     Jugador, JugadorCreate,
     Estadisticageneral, EstadisticaCreate,
@@ -10,7 +10,7 @@ from models import (
 
 app = FastAPI(title="sigmotoa FC con SQLModel")
 
-app.include_router(estadisticas.router)
+app.include_router(Equipo.router)
 
 
 # Crear tablas al iniciar

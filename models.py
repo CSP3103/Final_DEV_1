@@ -6,13 +6,13 @@ class JugadorBase(SQLModel):
     nombre: str
     edad: int
     posicion: str
-    estado: str
+    activo: bool
 
 
 class Jugador(JugadorBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
 
-    estadisticas: List["Estadistica"] = Relationship(back_populates="jugador")
+    estadisticas: List["EstadisticaBase"] = Relationship(back_populates="jugador")
 
 
 class JugadorCreate(JugadorBase):
@@ -21,9 +21,9 @@ class JugadorCreate(JugadorBase):
 
 
 class EstadisticaBase(SQLModel, table=True):
-    goles: int = 0
-    asistencias: int = 0
-    partidos_jugados: int = 0
+    goles: int
+    asistencias: int
+    partidos_jugados: int
 
 class EstadisticaPartidos(SQLModel):
     goles: int
@@ -35,9 +35,9 @@ class EstadisticaPartidos(SQLModel):
     lesion: bool
 
 
-class Estadisticageneral(EstadisticaBase, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    jugador_id: Optional[int] = Field(default=None, foreign_key="jugador.id")
+#class Estadisticageneral(EstadisticaBase, table=True):
+#    id: Optional[int] = Field(default=None, primary_key=True)
+#    jugador_id: Optional[int] = Field(default=None, foreign_key="jugador.id")
 
     jugador: Optional[Jugador] = Relationship(back_populates="estadisticas")
 
