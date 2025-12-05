@@ -1,89 +1,98 @@
-from fastapi import FastAPI, HTTPException
-from models import Jugador, Estadistica, Partido
+from fastapi import FastAPI, Depends, HTTPException
+from sqlmodel import Session, select
+from database import create_db_and_tables, get_session
+from models import (
+    Jugador, JugadorCreate,
+    Estadistica, EstadisticaCreate,
+    Partido, PartidoCreate
+)
 
-app = FastAPI(title="sigmotoa FC")
-
-# “Base de datos” temporal
-jugadores_db = []
-estadisticas_db = []
-partidos_db = []
+app = FastAPI(title="sigmotoa FC con SQLModel")
 
 
-# ---------------------------
-# HOME
-# ---------------------------
+# Crear tablas al iniciar
+@app.on_event("startup")
+def startup():
+    create_db_and_tables()
+
+
 @app.get("/")
-async def root():
-    return {"message": "sigmotoa FC data"}
+def home():
+    return {"message": "sigmotoa FC API con SQLModel"}
 
 
-# ---------------------------
-# CRUD JUGADORES
-# ---------------------------
+# --------------------------------
+#            JUGADORES
+# --------------------------------
 
-@app.post("/jugadores/")
-async def crear_jugador(jugador: Jugador):
-    jugadores_db.append(jugador)
-    return jugador
+@app.post("/jugadores/", response_model=Jugador)
+def crear_jugador(jugador: JugadorCreate, session: Session = Depends(get_session)):
+    nuevo = Jugador.from_orm(jugador)
+    session.add(nuevo)
+    session.commit()
+    session.refresh(nuevo)
+    return nuevo
 
 
 @app.get("/jugadores/")
-async def obtener_jugadores():
-    return jugadores_db
+def obtener_jugadores(session: Session = Depends(get_session)):
+    jugadores = session.exec(select(Jugador)).all()
+    return jugadores
 
 
 @app.get("/jugadores/{jugador_id}")
-async def obtener_jugador(jugador_id: int):
-    for j in jugadores_db:
-        if j.id == jugador_id:
-            return j
-    raise HTTPException(status_code=404, detail="Jugador no encontrado")
-
-
-@app.put("/jugadores/{jugador_id}")
-async def actualizar_jugador(jugador_id: int, jugador: Jugador):
-    for i, j in enumerate(jugadores_db):
-        if j.id == jugador_id:
-            jugadores_db[i] = jugador
-            return jugador
-    raise HTTPException(status_code=404, detail="Jugador no encontrado")
+def obtener_jugador(jugador_id: int, session: Session = Depends(get_session)):
+    jugador = session.get(Jugador, jugador_id)
+    if not jugador:
+        raise HTTPException(404, "Jugador no encontrado")
+    return jugador
 
 
 @app.delete("/jugadores/{jugador_id}")
-async def eliminar_jugador(jugador_id: int):
-    for j in jugadores_db:
-        if j.id == jugador_id:
-            jugadores_db.remove(j)
-            return {"message": "Jugador eliminado"}
-    raise HTTPException(status_code=404, detail="Jugador no encontrado")
+def eliminar_jugador(jugador_id: int, session: Session = Depends(get_session)):
+    jugador = session.get(Jugador, jugador_id)
+    if not jugador:
+        raise HTTPException(404, "Jugador no encontrado")
+    session.delete(jugador)
+    session.commit()
+    return {"message": "Jugador eliminado"}
 
 
-# ---------------------------
-# CRUD ESTADISTICAS
-# ---------------------------
+# --------------------------------
+#            ESTADISTICAS
+# --------------------------------
 
 @app.post("/estadisticas/")
-async def crear_estadistica(est: Estadistica):
-    estadisticas_db.append(est)
-    return est
+def crear_estadistica(est: EstadisticaCreate, session: Session = Depends(get_session)):
+    jugador = session.get(Jugador, est.jugador_id)
+    if not jugador:
+        raise HTTPException(404, "Jugador no existe")
+
+    nueva = Estadistica.from_orm(est)
+    session.add(nueva)
+    session.commit()
+    session.refresh(nueva)
+    return nueva
 
 
 @app.get("/estadisticas/")
-async def obtener_estadisticas():
-    return estadisticas_db
+def obtener_estadisticas(session: Session = Depends(get_session)):
+    return session.exec(select(Estadistica)).all()
 
 
-# ---------------------------
-# CRUD PARTIDOS
-# ---------------------------
+# --------------------------------
+#            PARTIDOS
+# --------------------------------
 
 @app.post("/partidos/")
-async def crear_partido(partido: Partido):
-    partidos_db.append(partido)
-    return partido
+def crear_partido(partido: PartidoCreate, session: Session = Depends(get_session)):
+    nuevo = Partido.from_orm(partido)
+    session.add(nuevo)
+    session.commit()
+    session.refresh(nuevo)
+    return nuevo
 
 
 @app.get("/partidos/")
-async def obtener_partidos():
-    return partidos_db
-
+def obtener_partidos(session: Session = Depends(get_session)):
+    return session.exec(select(Partido)).all()
