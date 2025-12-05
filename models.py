@@ -3,15 +3,14 @@ from typing import Optional, List
 from datetime import datetime
 from enum import Enum
 
-# Definir los posibles estados del jugador
 class EstadoJugador(str, Enum):
     activo = "Activo"
     inactivo = "Inactivo"
     lesionado = "Lesionado"
     suspendido = "Suspendido"
 
-# Modelo del jugador
-class Jugador(SQLModel, table=True):
+
+class Jugador(SQLModel, ):
     id: Optional[int] = Field(default=None, primary_key=True)
     nombre: str
     edad: int
@@ -21,13 +20,14 @@ class Jugador(SQLModel, table=True):
     altura: float
     peso: float
     pieDominante: str
-    posicion: str  # Cambiar si usas un enum o clase para posición
-    estado: EstadoJugador = EstadoJugador.activo
-    estadisticas: Optional[str] = None  # Aquí puedes poner estadísticas adicionales si es necesario.
-    partidos: List["Partido"] = Relationship(back_populates="jugador")
+    posicion: str
+    estado: bool | None = Field(description="Estados jugador", default=True)
+    #estadisticas: Optional[str] = None
+    #partidos: List["Partido"] = Relationship(back_populates="jugador")
 
 
-class estadisticas(SQLModel, table=True):
+class estadisticas(SQLModel, ):
+    id: Optional[int] = Field(default=None, primary_key=True)
     goles: int
     promedio_gol:int
     asistencias: int
@@ -36,3 +36,22 @@ class estadisticas(SQLModel, table=True):
     suspensiones: int
     vallas_invictas: int
 
+class Partido (SQLModel, ):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    local: str
+    visitante: str
+    goles: str
+    victoria: bool
+
+class Historial(SQLModel, ):
+    idHistorial: Optional[int] = Field(default=None, primary_key=True)
+    nombre: str
+    edad: int
+    numeroUnico: int
+    fechaNacimiento: datetime
+    nacionalidad: str
+    altura: float
+    peso: float
+    pieDominante: str
+    posicion: str
+    estado: str
