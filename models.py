@@ -1,62 +1,38 @@
 from sqlmodel import SQLModel, Field, Relationship
 from typing import Optional, List
+from datetime import datetime
+from enum import Enum
 
+# Definir los posibles estados del jugador
+class EstadoJugador(str, Enum):
+    activo = "Activo"
+    inactivo = "Inactivo"
+    lesionado = "Lesionado"
+    suspendido = "Suspendido"
 
-class JugadorBase(SQLModel):
+# Modelo del jugador
+class Jugador(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
     nombre: str
     edad: int
-    posicion: str
-    activo: bool
+    numeroUnico: int = Field(ge=1, le=99)  # Limitar a 1-99
+    fechaNacimiento: datetime
+    nacionalidad: str
+    altura: float
+    peso: float
+    pieDominante: str
+    posicion: str  # Cambiar si usas un enum o clase para posición
+    estado: EstadoJugador = EstadoJugador.activo
+    estadisticas: Optional[str] = None  # Aquí puedes poner estadísticas adicionales si es necesario.
+    partidos: List["Partido"] = Relationship(back_populates="jugador")
 
 
-class Jugador(JugadorBase, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-
-    estadisticas: List["EstadisticaBase"] = Relationship(back_populates="jugador")
-
-
-class JugadorCreate(JugadorBase):
-    pass
-
-
-
-class EstadisticaBase(SQLModel, table=True):
+class estadisticas(SQLModel, table=True):
     goles: int
+    promedio_gol:int
     asistencias: int
     partidos_jugados: int
+    tarjetas_amarillas: int
+    suspensiones: int
+    vallas_invictas: int
 
-class EstadisticaPartidos(SQLModel):
-    goles: int
-    asistencias: int
-    minutos_jugados: int
-    faltas_cometidas: int
-    tarjeta_amarilla: bool
-    tarjeta_roja: bool
-    lesion: bool
-
-
-#class Estadisticageneral(EstadisticaBase, table=True):
-#    id: Optional[int] = Field(default=None, primary_key=True)
-#    jugador_id: Optional[int] = Field(default=None, foreign_key="jugador.id")
-
-    jugador: Optional[Jugador] = Relationship(back_populates="estadisticas")
-
-
-class EstadisticaCreate(EstadisticaBase):
-    jugador_id: int
-
-
-class PartidoBase(SQLModel):
-    equipo_local: str
-    equipo_visitante: str
-    marcador_local: int = 0
-    marcador_visitante: int = 0
-    fecha: str
-
-
-class Partido(PartidoBase, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-
-
-class PartidoCreate(PartidoBase):
-    pass
