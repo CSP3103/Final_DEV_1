@@ -1,13 +1,16 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlmodel import Session, select
 from database import create_db_and_tables, get_session
+from routers import estadisticasgenerales
 from models import (
     Jugador, JugadorCreate,
-    Estadistica, EstadisticaCreate,
+    Estadisticageneral, EstadisticaCreate,
     Partido, PartidoCreate
 )
 
 app = FastAPI(title="sigmotoa FC con SQLModel")
+
+app.include_router(estadisticas.router)
 
 
 # Crear tablas al iniciar
@@ -62,7 +65,7 @@ def crear_estadistica(est: EstadisticaCreate, session: Session = Depends(get_ses
     if not jugador:
         raise HTTPException(404, "Jugador no existe")
 
-    nueva = Estadistica.from_orm(est)
+    nueva = Estadisticageneral.from_orm(est)
     session.add(nueva)
     session.commit()
     session.refresh(nueva)
@@ -71,7 +74,7 @@ def crear_estadistica(est: EstadisticaCreate, session: Session = Depends(get_ses
 
 @app.get("/estadisticas/")
 def obtener_estadisticas(session: Session = Depends(get_session)):
-    return session.exec(select(Estadistica)).all()
+    return session.exec(select(Estadisticageneral)).all()
 
 
 @app.post("/partidos/")

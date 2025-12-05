@@ -5,8 +5,8 @@ from typing import Optional, List
 class JugadorBase(SQLModel):
     nombre: str
     edad: int
-    posicion: Position
-    estado: States
+    posicion: str
+    estado: str
 
 
 class Jugador(JugadorBase, table=True):
@@ -35,7 +35,7 @@ class EstadisticaPartidos(SQLModel):
     lesion: bool
 
 
-class Estadistica(EstadisticaBase, table=True):
+class Estadisticageneral(EstadisticaBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     jugador_id: Optional[int] = Field(default=None, foreign_key="jugador.id")
 
